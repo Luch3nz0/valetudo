@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Qual personagem de Vale Tudo você é?</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #fff;
+      padding: 30px;
+      max-width: 700px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #ffcc00;
+      margin-bottom: 40px;
+    }
+
+    .question {
+      display: none;
+      background-color: #222;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .question.active {
+      display: block;
+    }
+
+    .question h3 {
+      color: #ffcc00;
+      margin-bottom: 15px;
+    }
+
+    .option {
+      display: block;
+      background-color: #333;
+      margin: 8px 0;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .option:hover {
+      background-color: #444;
+    }
+
+    #result {
+      display: none;
+      margin-top: 30px;
+      background-color: #222;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Qual personagem de Vale Tudo você é?</h1>
+
+  <div id="quiz"></div>
+
+  <div id="result"></div>
+
+  <script>
+    const questions = [
+      {
+        text: "1. O que você faz quando acorda?",
+        options: {
+          heleninha: "Tomo uísque com gelo e encaro o vazio da existência.",
+          maria: "Vejo se minha mãe já morreu pra herdar tudo.",
+          eugenio: "Dou um conselho horrível que ninguém pediu.",
+          ivan: "Começo a trabalhar antes do café. Empreender é isso!",
+          raquel: "Passo um pano na casa e penso na vida.",
+          odete: "Ligo pro banco da Suíça e demito alguém."
+        }
+      },
+      {
+        text: "2. Qual seu prato favorito?",
+        options: {
+          odete: "Caviar. O resto é coisa de pobre.",
+          raquel: "Um arroz com feijão honesto.",
+          maria: "Qualquer coisa que sirvam em Paris.",
+          ivan: "Marmita fitness na mesa do escritório.",
+          heleninha: "Vinho tinto conta como janta?",
+          eugenio: "O que tiver no camarote do momento."
+        }
+      },
+      {
+        text: "3. Alguém te traiu. E agora?",
+        options: {
+          odete: "Destruo a vida da pessoa com estilo.",
+          raquel: "Perdoo, mas excluo do grupo da família.",
+          maria: "Choro pra câmera e viro o jogo.",
+          ivan: "Sigo em frente. Tenho reunião às 9h.",
+          heleninha: "Bebo, ligo pra ex e me arrependo.",
+          eugenio: "Nem percebi. Ninguém me ouve mesmo."
+        }
+      },
+      {
+        text: "4. Qual dessas frases é mais você?",
+        options: {
+          heleninha: "“Eu sinto muito… tipo, o tempo todo.”",
+          raquel: "“Com trabalho honesto, a gente chega lá.”",
+          maria: "“Se não for pra brilhar, nem saio de casa.”",
+          ivan: "“Bora vender esse sonho!”",
+          eugenio: "“Acho que você devia... sei lá… meditar?”",
+          odete: "“O povo? Ah, isso ainda existe?”"
+        }
+      },
+      {
+        text: "5. O que te define numa festa?",
+        options: {
+          maria: "Cheguei, arrasei, ninguém brilhou mais que eu.",
+          raquel: "Fico ajudando a limpar depois.",
+          odete: "Só vou em eventos com champanhe francês.",
+          ivan: "Entrego cartão de visita pra todo mundo.",
+          heleninha: "Dancei com a garrafa. De novo.",
+          eugenio: "Ninguém lembra que eu fui. Triste."
+        }
+      },
+      {
+        text: "6. Qual sua vibe hoje?",
+        options: {
+          heleninha: "Cansada, dramática, poética e levemente bêbada.",
+          odete: "Rica, sarcástica e impiedosa.",
+          maria: "Cínica, linda e pronta pra causar.",
+          raquel: "Honesta, cansada e com boletos.",
+          ivan: "Motivado. Bora empreender!",
+          eugenio: "Confuso, ignorado e de óculos escuros."
+        }
+      }
+    ];
+
+    const results = {
+      raquel: "🧹 Você é <strong>Raquel</strong> – Trabalhadora, justa, a mãe que aguenta tudo. Guerreira dos anos 80 com orgulho.",
+      maria: "💅 Você é <strong>Maria de Fátima</strong> – Ambiciosa, venenosa e pronta pra fingir choro e pegar herança.",
+      odete: "👑 Você é <strong>Odete Roitman</strong> – Rica, debochada e com desprezo por 99% da população mundial.",
+      heleninha: "🎭 Você é <strong>Heleninha Roitman</strong> – Intensa, dramática e sempre pronta pra uma taça (ou duas).",
+      ivan: "📊 Você é <strong>Ivan</strong> – O bonzinho que tenta botar ordem no caos e vender um app no meio disso tudo.",
+      eugenio: "🍷 Você é <strong>Eugênio</strong> – Ignorado por todos, vive dando conselhos que ninguém pediu, mas tá sempre no rolê."
+    };
+
+    const quizContainer = document.getElementById("quiz");
+    const resultContainer = document.getElementById("result");
+    let currentQuestion = 0;
+    const score = {};
+
+    function showQuestion(index) {
+      quizContainer.innerHTML = "";
+      if (index >= questions.length) {
+        showResult();
+        return;
+      }
+
+      const q = questions[index];
+      const questionDiv = document.createElement("div");
+      questionDiv.className = "question active";
+
+      const h3 = document.createElement("h3");
+      h3.textContent = q.text;
+      questionDiv.appendChild(h3);
+
+      for (const [key, value] of Object.entries(q.options)) {
+        const btn = document.createElement("div");
+        btn.className = "option";
+        btn.textContent = value;
+        btn.onclick = () => {
+          score[key] = (score[key] || 0) + 1;
+          currentQuestion++;
+          showQuestion(currentQuestion);
+        };
+        questionDiv.appendChild(btn);
+      }
+
+      quizContainer.appendChild(questionDiv);
+    }
+
+    function showResult() {
+      quizContainer.innerHTML = "";
+      let max = 0;
+      let chosen = "";
+
+      for (const [key, value] of Object.entries(score)) {
+        if (value > max) {
+          max = value;
+          chosen = key;
+        }
+      }
+
+      resultContainer.innerHTML = results[chosen] || "Você é um enigma, tipo o final da novela.";
+      resultContainer.style.display = "block";
+    }
+
+    showQuestion(currentQuestion);
+  </script>
+</body>
+</html>
